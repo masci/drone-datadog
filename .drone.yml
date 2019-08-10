@@ -1,0 +1,71 @@
+kind: pipeline
+name: test
+
+steps:
+  - name: test
+    image: "golang:1"
+    commands:
+      - 'echo " ! gofmt -d *.go 2>&1 | read " | bash'
+      - 'go vet ./...'
+      - "go build"
+      - "go test -v -race"
+
+  - name: datadog
+    image: masci/drone-datadog
+    settings:
+      api_key:
+        from_secret: datadog_api_key
+      dry_run: false
+      metrics:
+        - type: "count"
+          name: "foo.bar"
+          value: -99.9
+          tags: ["env:prod", "foo:bar"]
+          host: ${DRONE_MACHINE}
+        - type: "count"
+          name: "cpu.count"
+          value: 9.9
+          tags: ["env:prod"]
+          host: ${DRONE_MACHINE}
+      events:
+        - title: "Pipeline Done"
+          text: "This event occurred"
+          tags: ["env:prod"]
+          alert_type: "info"
+          host: ${DRONE_MACHINE}
+
+---
+kind: pipeline
+name: release
+
+steps:
+- name: fetch
+  # extra step needed to fetch tags after cloning
+  image: docker:git
+  commands:
+  - git fetch --tags
+
+- name: build
+  image: plugins/docker
+  settings:
+    auto_tag: true
+    repo: arduino/drone-datadog
+    build_args:
+      - 'TAG=${DRONE_TAG}'
+      - 'SHA1=${DRONE_COMMIT_SHA}'
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+
+trigger:
+  event:
+    - tag
+  status:
+    - success
+  ref:
+    include:
+    - refs/tags/v*
+
+depends_on:
+  - test
