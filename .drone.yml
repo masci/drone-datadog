@@ -2,31 +2,26 @@ kind: pipeline
 name: test
 
 steps:
-  - name: test
-    image: "golang:1"
-    commands:
-      - 'echo " ! gofmt -d *.go 2>&1 | read " | bash'
-      - 'go vet ./...'
-      - "go build"
-      - "go test -v -race"
+- name: test
+  image: "golang:1"
+  commands:
+    - 'echo " ! gofmt -d *.go 2>&1 | read " | bash'
+    - 'go vet ./...'
+    - "go build"
+    - "go test -v -race"
 
-  - name: datadog
-    image: masci/drone-datadog
-    settings:
-      api_key:
-        from_secret: datadog_api_key
-      dry_run: false
-      metrics:
-        - type: "count"
-          name: "masci.pipelines.count"
-          value: 1.0
-          tags: ["project:${DRONE_REPO_NAME}", "branch:${DRONE_BRANCH}"]
-          host: ${DRONE_SYSTEM_HOSTNAME}
-      events:
-        - title: "Tests for drone-datadog have passed"
-          text: "All good"
-          alert_type: "info"
-          host: ${DRONE_SYSTEM_HOSTNAME}
+- name: datadog
+  image: masci/drone-datadog
+  settings:
+    # api_key:
+    #   from_secret: datadog_api_key
+    dry_run: true
+    metrics:
+      - type: "count"
+        name: "masci.pipelines.count"
+        value: 1.0
+        tags: ["project:${DRONE_REPO_NAME}", "branch:${DRONE_BRANCH}"]
+        host: ${DRONE_SYSTEM_HOSTNAME}
 
 ---
 kind: pipeline
@@ -53,6 +48,17 @@ steps:
     tags:
       - latest
       - ${DRONE_TAG}
+
+- name: datadog
+  image: masci/drone-datadog
+  settings:
+    api_key:
+      from_secret: datadog_api_key
+    events:
+      - title: "Building drone-datadog success"
+        text: "Version ${DRONE_TAG} is available on Docker Hub"
+        alert_type: "info"
+        host: ${DRONE_SYSTEM_HOSTNAME}
 
 trigger:
   event:
