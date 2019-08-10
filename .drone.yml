@@ -49,7 +49,7 @@ steps:
   image: plugins/docker
   settings:
     auto_tag: true
-    repo: arduino/drone-datadog
+    repo: masci/drone-datadog
     build_args:
       - 'TAG=${DRONE_TAG}'
       - 'SHA1=${DRONE_COMMIT_SHA}'
