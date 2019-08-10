@@ -195,7 +195,7 @@ func main() {
 				log.Fatalf("unable to send metrics: %v", err)
 			}
 
-			log.Printf("successfully sent %d metric(s)", len(metrics))
+			log.Printf("%d metric(s) sent successfully", len(metrics))
 		}
 	} else {
 		log.Println(err)
