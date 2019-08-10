@@ -13,8 +13,8 @@ steps:
 - name: datadog
   image: masci/drone-datadog
   settings:
-    # api_key:
-    #   from_secret: datadog_api_key
+    api_key:
+      from_secret: datadog_api_key
     dry_run: false
     metrics:
       - type: "count"
