@@ -18,21 +18,15 @@ steps:
       dry_run: false
       metrics:
         - type: "count"
-          name: "foo.bar"
-          value: -99.9
-          tags: ["env:prod", "foo:bar"]
-          host: ${DRONE_MACHINE}
-        - type: "count"
-          name: "cpu.count"
-          value: 9.9
-          tags: ["env:prod"]
-          host: ${DRONE_MACHINE}
+          name: "masci.pipelines.count"
+          value: 1.0
+          tags: ["project:${DRONE_REPO_NAME}", "branch:${DRONE_BRANCH}"]
+          host: ${DRONE_SYSTEM_HOSTNAME}
       events:
-        - title: "Pipeline Done"
-          text: "This event occurred"
-          tags: ["env:prod"]
+        - title: "Tests for drone-datadog have passed"
+          text: "All good"
           alert_type: "info"
-          host: ${DRONE_MACHINE}
+          host: ${DRONE_SYSTEM_HOSTNAME}
 
 ---
 kind: pipeline
