@@ -50,23 +50,23 @@ type Events []Event
 
 // MarshalJSON provides custom serialization for the Metric object
 func (m Metric) MarshalJSON() ([]byte, error) {
-	points := []float32{
+	point := []float32{
 		float32(time.Now().Unix()),
 		m.Value,
 	}
 
 	return json.Marshal(&struct {
-		Name   string    `json:"name"`
-		Type   string    `json:"type,omitempty"`
-		Host   string    `json:"host,omitempty"`
-		Tags   []string  `json:"tags,omitempty"`
-		Points []float32 `json:"points"`
+		Name   string      `json:"name"`
+		Type   string      `json:"type,omitempty"`
+		Host   string      `json:"host,omitempty"`
+		Tags   []string    `json:"tags,omitempty"`
+		Points [][]float32 `json:"points"`
 	}{
 		Name:   m.Name,
 		Type:   m.Type,
 		Host:   m.Host,
 		Tags:   m.Tags,
-		Points: points,
+		Points: [][]float32{point},
 	})
 }
 
