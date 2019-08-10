@@ -15,7 +15,7 @@ steps:
   settings:
     # api_key:
     #   from_secret: datadog_api_key
-    dry_run: true
+    dry_run: false
     metrics:
       - type: "count"
         name: "masci.pipelines.count"
