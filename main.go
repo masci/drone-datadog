@@ -181,26 +181,45 @@ func main() {
 	}
 
 	if metrics, err := parseMetrics(); err == nil {
-		payload, err := json.Marshal(metrics)
+		payload, err := json.Marshal(struct {
+			Series Metrics `json:"series"`
+		}{
+			Series: metrics,
+		})
+
 		if err != nil {
 			log.Printf("error encoding metrics: %v", err)
 		} else {
 			url := fmt.Sprintf("https://api.datadoghq.com/api/v1/series?api_key=%s", cfg.APIKey)
-			send(url, payload, cfg.DryRun)
+			if err := send(url, payload, cfg.DryRun); err != nil {
+				log.Fatalf("unable to send metrics: %v", err)
+			}
+
+			log.Printf("successfully sent %d metric(s)", len(metrics))
 		}
 	} else {
 		log.Println(err)
 	}
 
 	if events, err := parseEvents(); err == nil {
-		payload, err := json.Marshal(events)
-		if err != nil {
-			log.Printf("error encoding metrics: %v", err)
-		} else {
-			url := fmt.Sprintf("https://api.datadoghq.com/api/v1/events?api_key=%s", cfg.APIKey)
-			send(url, payload, cfg.DryRun)
+		url := fmt.Sprintf("https://api.datadoghq.com/api/v1/events?api_key=%s", cfg.APIKey)
+		successCount := 0
+		// events must be posted one at a time
+		for _, ev := range events {
+			payload, err := json.Marshal(ev)
+			if err != nil {
+				log.Printf("error encoding event: %v", err)
+				continue
+			}
+
+			if err := send(url, payload, cfg.DryRun); err != nil {
+				log.Printf("unable to send event: %v", err)
+				continue
+			}
+
+			successCount++
 		}
-	} else {
-		log.Println(err)
+
+		log.Printf("%d event(s) sent successfully", successCount)
 	}
 }
