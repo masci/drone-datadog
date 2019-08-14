@@ -56,7 +56,7 @@ func (m Metric) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(&struct {
-		Name   string      `json:"name"`
+		Name   string      `json:"metric"`
 		Type   string      `json:"type,omitempty"`
 		Host   string      `json:"host,omitempty"`
 		Tags   []string    `json:"tags,omitempty"`
