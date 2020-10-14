@@ -54,4 +54,22 @@ You can use events to notify something bad happened:
     - failure
 ```
 
+You can change the datadog site region to EU (com is default)
+
+```yml
+- name: notify-pipeline
+  image: masci/drone-datadog
+  settings:
+    region: eu
+    api_key:
+      from_secret: datadog_api_key
+    events:
+      - title: "Build failure"
+        text: "Build ${DRONE_BUILD_NUMBER} has failed"
+        alert_type: "error"
+  when:
+    status:
+    - failure
+```
+
 You can look at [this repo .drone.yml](.drone.yml) file for a real world example.

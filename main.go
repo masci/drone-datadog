@@ -22,6 +22,7 @@ var (
 type Config struct {
 	APIKey string
 	DryRun bool
+        Region string
 }
 
 // Metric represents a point that'll be sent to Datadog
@@ -97,11 +98,16 @@ func parseConfig() (*Config, error) {
 	cfg := &Config{
 		APIKey: os.Getenv("PLUGIN_API_KEY"),
 		DryRun: os.Getenv("PLUGIN_DRY_RUN") == "true",
+		Region: os.Getenv("PLUGIN_REGION"),
 	}
 
 	if cfg.APIKey == "" && !cfg.DryRun {
 		return nil, fmt.Errorf("Datadog API Key is missing")
 	}
+
+	if cfg.Region == "" && !cfg.DryRun {
+                cfg.Region = "com"
+        }
 
 	return cfg, nil
 }
@@ -190,7 +196,7 @@ func main() {
 		if err != nil {
 			log.Printf("error encoding metrics: %v", err)
 		} else {
-			url := fmt.Sprintf("https://api.datadoghq.com/api/v1/series?api_key=%s", cfg.APIKey)
+			url := fmt.Sprintf("https://api.datadoghq.%s/api/v1/series?api_key=%s", cfg.Region, cfg.APIKey)
 			if err := send(url, payload, cfg.DryRun); err != nil {
 				log.Fatalf("unable to send metrics: %v", err)
 			}
@@ -202,7 +208,7 @@ func main() {
 	}
 
 	if events, err := parseEvents(); err == nil {
-		url := fmt.Sprintf("https://api.datadoghq.com/api/v1/events?api_key=%s", cfg.APIKey)
+		url := fmt.Sprintf("https://api.datadoghq.%s/api/v1/events?api_key=%s", cfg.Region, cfg.APIKey)
 		successCount := 0
 		// events must be posted one at a time
 		for _, ev := range events {
