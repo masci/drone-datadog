@@ -1,7 +1,7 @@
 # drone-datadog
 
-[![Build Status](https://cloud.drone.io/api/badges/masci/drone-datadog/status.svg)](https://cloud.drone.io/masci/drone-datadog)
-[![Docker image metadata](https://images.microbadger.com/badges/image/masci/drone-datadog.svg)](https://microbadger.com/images/masci/drone-datadog "Get your own image badge on microbadger.com")
+[![Build Status](https://cloud.drone.io/api/badges/upgreydd/drone-datadog/status.svg)](https://cloud.drone.io/upgreydd/drone-datadog)
+[![Docker image metadata](https://images.microbadger.com/badges/image/upgreydd/drone-datadog.svg)](https://microbadger.com/images/upgreydd/drone-datadog "Get your own image badge on microbadger.com")
 
 This plugin lets you send events and metrics to Datadog from a drone pipeline.
 
@@ -11,13 +11,13 @@ To send a metric every time a pipeline runs, add this step:
 
 ```yml
 - name: count-pipeline
-  image: masci/drone-datadog
+  image: upgreydd/drone-datadog
   settings:
     api_key:
       from_secret: datadog_api_key
     metrics:
       - type: "count"
-        name: "masci.pipelines.count"
+        name: "upgreydd.pipelines.count"
         value: 1.0
         tags: ["project:${DRONE_REPO_NAME}", "branch:${DRONE_BRANCH}"]
 ```
@@ -26,7 +26,7 @@ Sending an event is similar, both `metrics` and `events` support the `host` fiel
 
 ```yml
 - name: notify-pipeline
-  image: masci/drone-datadog
+  image: upgreydd/drone-datadog
   settings:
     api_key:
       from_secret: datadog_api_key
@@ -41,7 +41,7 @@ You can use events to notify something bad happened:
 
 ```yml
 - name: notify-pipeline
-  image: masci/drone-datadog
+  image: upgreydd/drone-datadog
   settings:
     api_key:
       from_secret: datadog_api_key

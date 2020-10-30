@@ -11,14 +11,14 @@ steps:
     - "go test -v -race"
 
 - name: datadog
-  image: masci/drone-datadog
+  image: upgreydd/drone-datadog
   settings:
     api_key:
       from_secret: datadog_api_key
     dry_run: false
     metrics:
       - type: "count"
-        name: "masci.pipelines.count"
+        name: "upgreydd.pipelines.count"
         value: 1.0
         tags: ["project:${DRONE_REPO_NAME}", "branch:${DRONE_BRANCH}"]
         host: ${DRONE_SYSTEM_HOSTNAME}
@@ -37,7 +37,7 @@ steps:
 - name: build
   image: plugins/docker
   settings:
-    repo: masci/drone-datadog
+    repo: upgreydd/drone-datadog
     build_args:
       - 'TAG=${DRONE_TAG}'
       - 'SHA1=${DRONE_COMMIT_SHA}'
@@ -50,7 +50,7 @@ steps:
       - ${DRONE_TAG}
 
 - name: datadog
-  image: masci/drone-datadog
+  image: upgreydd/drone-datadog
   settings:
     api_key:
       from_secret: datadog_api_key

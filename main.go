@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -20,8 +21,9 @@ var (
 
 // Config contains what's in the `settings` section of the config file
 type Config struct {
-	APIKey string
-	DryRun bool
+	APIKey      string
+	DryRun      bool
+	ShowMetrics bool
 }
 
 // Metric represents a point that'll be sent to Datadog
@@ -95,8 +97,9 @@ func printVersion() {
 
 func parseConfig() (*Config, error) {
 	cfg := &Config{
-		APIKey: os.Getenv("PLUGIN_API_KEY"),
-		DryRun: os.Getenv("PLUGIN_DRY_RUN") == "true",
+		APIKey:      os.Getenv("PLUGIN_API_KEY"),
+		DryRun:      os.Getenv("PLUGIN_DRY_RUN") == "true",
+		ShowMetrics: os.Getenv("PLUGIN_SHOW_METRICS") == "true",
 	}
 
 	if cfg.APIKey == "" && !cfg.DryRun {
@@ -120,6 +123,14 @@ func parseMetrics() (Metrics, error) {
 			continue
 		}
 
+		var newTags []string
+		for _, t := range m.Tags {
+			if strings.Contains(t, ":") && strings.HasSuffix(t, ":") {
+				t = t + os.Getenv(strings.ReplaceAll(strings.ToUpper(strings.TrimSuffix(t, ":")), "-", "_"))
+			}
+			newTags = append(newTags, t)
+		}
+		m.Tags = newTags
 		metrics = append(metrics, m)
 	}
 
@@ -186,6 +197,10 @@ func main() {
 		}{
 			Series: metrics,
 		})
+
+		if cfg.ShowMetrics {
+			log.Printf("Metrics payload: %v", metrics)
+		}
 
 		if err != nil {
 			log.Printf("error encoding metrics: %v", err)
