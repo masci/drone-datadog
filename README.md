@@ -51,10 +51,10 @@ You can use events to notify something bad happened:
         alert_type: "error"
   when:
     status:
-    - failure
+      - failure
 ```
 
-You can change the datadog site region to EU (com is default)
+You can change the datadog site region to EU (`com` is default)
 
 ```yml
 - name: notify-pipeline
@@ -69,7 +69,7 @@ You can change the datadog site region to EU (com is default)
         alert_type: "error"
   when:
     status:
-    - failure
+      - failure
 ```
 
 You can look at [this repo .drone.yml](.drone.yml) file for a real world example.

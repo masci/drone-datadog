@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -22,7 +23,7 @@ var (
 type Config struct {
 	APIKey string
 	DryRun bool
-        Region string
+	Region string
 }
 
 // Metric represents a point that'll be sent to Datadog
@@ -98,7 +99,7 @@ func parseConfig() (*Config, error) {
 	cfg := &Config{
 		APIKey: os.Getenv("PLUGIN_API_KEY"),
 		DryRun: os.Getenv("PLUGIN_DRY_RUN") == "true",
-		Region: os.Getenv("PLUGIN_REGION"),
+		Region: strings.ToLower(os.Getenv("PLUGIN_REGION")),
 	}
 
 	if cfg.APIKey == "" && !cfg.DryRun {
@@ -106,8 +107,8 @@ func parseConfig() (*Config, error) {
 	}
 
 	if cfg.Region == "" && !cfg.DryRun {
-                cfg.Region = "com"
-        }
+		cfg.Region = "com"
+	}
 
 	return cfg, nil
 }
