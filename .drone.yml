@@ -2,7 +2,6 @@ kind: pipeline
 name: test
 
 steps:
-  # Run the tests
   - name: test
     image: "golang:1.15-alpine"
     environment:
@@ -13,23 +12,41 @@ steps:
       - "go build"
       - "go test -v"
 
+  - name: datadog
+    image: "masci/drone-datadog"
+    settings:
+      api_key:
+        from_secret: datadog_api_key
+      dry_run: false
+      metrics:
+        - type: "count"
+          name: "masci.pipelines.count"
+          value: 1.0
+          tags: ["project:${DRONE_REPO_NAME}", "branch:${DRONE_BRANCH}"]
+          host: ${DRONE_SYSTEM_HOSTNAME}
+
+---
+kind: pipeline
+name: unstable
+
+steps:
   # Build the current commit
   - name: build
     image: plugins/docker
     settings:
       repo: masci/drone-datadog
       build_args:
-        - "TAG=${DRONE_COMMIT_SHA}"
+        - "TAG=$unstable"
         - "SHA1=${DRONE_COMMIT_SHA}"
       username:
         from_secret: docker_username
       password:
         from_secret: docker_password
       tags:
-        - ${DRONE_COMMIT_SHA}
-
+        - unstable
+  # Use unstable to test the plugin
   - name: datadog
-    image: "masci/drone-datadog:${DRONE_COMMIT_SHA}"
+    image: "masci/drone-datadog:unstable"
     settings:
       api_key:
         from_secret: datadog_api_key
@@ -42,10 +59,18 @@ steps:
           host: ${DRONE_SYSTEM_HOSTNAME}
       events:
         - title: "Building drone-datadog for commit ${DRONE_COMMIT_SHA} success"
-          text: "Version '${DRONE_COMMIT_SHA}' is available on Docker Hub"
+          text: "Version 'unstable' is available on Docker Hub"
           alert_type: "info"
           host: ${DRONE_SYSTEM_HOSTNAME}
           priority: "low"
+          aggregation_key: "unstable-build"
+
+trigger:
+  branch:
+    - master
+
+depends_on:
+  - test
 
 ---
 kind: pipeline
