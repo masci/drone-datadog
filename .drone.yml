@@ -2,63 +2,63 @@ kind: pipeline
 name: test
 
 steps:
-- name: test
-  image: "golang:1"
-  commands:
-    - 'echo " ! gofmt -d *.go 2>&1 | read " | bash'
-    - 'go vet ./...'
-    - "go build"
-    - "go test -v -race"
+  - name: test
+    image: "golang:1.15-alpine"
+    commands:
+      - 'echo " ! gofmt -d *.go 2>&1 | read " | bash'
+      - "go vet ./..."
+      - "go build"
+      - "go test -v -race"
 
-- name: datadog
-  image: masci/drone-datadog
-  settings:
-    api_key:
-      from_secret: datadog_api_key
-    dry_run: false
-    metrics:
-      - type: "count"
-        name: "masci.pipelines.count"
-        value: 1.0
-        tags: ["project:${DRONE_REPO_NAME}", "branch:${DRONE_BRANCH}"]
-        host: ${DRONE_SYSTEM_HOSTNAME}
+  - name: datadog
+    image: masci/drone-datadog
+    settings:
+      api_key:
+        from_secret: datadog_api_key
+      dry_run: false
+      metrics:
+        - type: "count"
+          name: "masci.pipelines.count"
+          value: 1.0
+          tags: ["project:${DRONE_REPO_NAME}", "branch:${DRONE_BRANCH}"]
+          host: ${DRONE_SYSTEM_HOSTNAME}
 
 ---
 kind: pipeline
 name: release
 
 steps:
-- name: fetch
-  # extra step needed to fetch tags after cloning
-  image: docker:git
-  commands:
-  - git fetch --tags
+  - name: fetch
+    # extra step needed to fetch tags after cloning
+    image: docker:git
+    commands:
+      - git fetch --tags
 
-- name: build
-  image: plugins/docker
-  settings:
-    repo: masci/drone-datadog
-    build_args:
-      - 'TAG=${DRONE_TAG}'
-      - 'SHA1=${DRONE_COMMIT_SHA}'
-    username:
-      from_secret: docker_username
-    password:
-      from_secret: docker_password
-    tags:
-      - latest
-      - ${DRONE_TAG}
+  - name: build
+    image: plugins/docker
+    settings:
+      repo: masci/drone-datadog
+      build_args:
+        - "TAG=${DRONE_TAG}"
+        - "SHA1=${DRONE_COMMIT_SHA}"
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      tags:
+        - latest
+        - ${DRONE_TAG}
 
-- name: datadog
-  image: masci/drone-datadog
-  settings:
-    api_key:
-      from_secret: datadog_api_key
-    events:
-      - title: "Building drone-datadog success"
-        text: "Version ${DRONE_TAG} is available on Docker Hub"
-        alert_type: "info"
-        host: ${DRONE_SYSTEM_HOSTNAME}
+  - name: datadog
+    image: masci/drone-datadog
+    settings:
+      api_key:
+        from_secret: datadog_api_key
+      events:
+        - title: "Building drone-datadog success"
+          text: "Version ${DRONE_TAG} is available on Docker Hub"
+          alert_type: "info"
+          host: ${DRONE_SYSTEM_HOSTNAME}
 
 trigger:
   event:
@@ -67,7 +67,7 @@ trigger:
     - success
   ref:
     include:
-    - refs/tags/v*
+      - refs/tags/v*
 
 depends_on:
   - test
