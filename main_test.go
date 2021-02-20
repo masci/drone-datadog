@@ -50,6 +50,41 @@ func TestIsValidAlertType(t *testing.T) {
 	}
 }
 
+func TestIsValidPriority(t *testing.T) {
+	var typesTest = []struct {
+		input string
+		want  bool
+	}{
+		{input: "", want: true},
+		{input: "low", want: true},
+		{input: "normal", want: true},
+		{input: "Foo", want: false},
+	}
+
+	for _, tt := range typesTest {
+		if got := isValidPriority(tt.input); got != tt.want {
+			t.Fatalf("expected %v, got %v", tt.want, got)
+		}
+	}
+}
+
+func TestIsValidAggregationKey(t *testing.T) {
+	var typesTest = []struct {
+		input string
+		want  bool
+	}{
+		{input: "", want: true},
+		{input: "this_is_a_good_key", want: true},
+		{input: strings.Repeat("a", 101), want: false},
+	}
+
+	for _, tt := range typesTest {
+		if got := isValidAggregationKey(tt.input); got != tt.want {
+			t.Fatalf("expected %v, got %v", tt.want, got)
+		}
+	}
+}
+
 func TestPrintVersion(t *testing.T) {
 	buf := new(bytes.Buffer)
 	log.SetOutput(buf)

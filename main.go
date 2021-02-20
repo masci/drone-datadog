@@ -39,12 +39,19 @@ type Metric struct {
 type Metrics []Metric
 
 // Event represents an event that'll be sent to Datadog
+// see https://docs.datadoghq.com/api/latest/events/
 type Event struct {
-	Title     string   `json:"title"`
-	Text      string   `json:"text"`
-	AlertType string   `json:"alert_type,omitempty"`
-	Host      string   `json:"host,omitempty"`
-	Tags      []string `json:"tags,omitempty"`
+	Title          string   `json:"title"`
+	Text           string   `json:"text"`
+	AlertType      string   `json:"alert_type,omitempty"`
+	Host           string   `json:"host,omitempty"`
+	Tags           []string `json:"tags,omitempty"`
+	AggregationKey string   `json:"aggregation_key"` // limited to 100 chars
+	DateHappened   int64    `json:"date_happened"`
+	DeviceName     string   `json:"device_name"`
+	Priority       string   `json:"priority"` // 'normal' or 'low'
+	RelatedEventID int64    `json:"related_event_id"`
+	SourceTypeName string   `json:"source_type_name"`
 }
 
 // Events is a type alias for a slice ov Event
@@ -89,6 +96,18 @@ func isValidAlertType(t string) bool {
 		"error":   true,
 		"":        true, // will default to `info`
 	}[t]
+}
+
+func isValidPriority(p string) bool {
+	return map[string]bool{
+		"normal": true,
+		"low":    true,
+		"":       true, // will default to `normal`
+	}[p]
+}
+
+func isValidAggregationKey(k string) bool {
+	return len(k) <= 100
 }
 
 func printVersion() {
@@ -140,14 +159,20 @@ func parseEvents() (Events, error) {
 		return nil, fmt.Errorf("events configuration error: %v", err)
 	}
 
+	// validate Event fields
 	events := Events{}
 	for _, ev := range data {
 		if !isValidAlertType(ev.AlertType) {
 			log.Printf("invalid alert type: %s", ev.AlertType)
-			continue
+		} else if !isValidPriority(ev.Priority) {
+			log.Printf("invalid priority value: %s", ev.Priority)
+		} else if !isValidAggregationKey(ev.AggregationKey) {
+			log.Printf("invalid aggregation key value: %s", ev.AggregationKey)
+		} else {
+			// all good, add the event
+			ev.DateHappened = time.Now().Unix()
+			events = append(events, ev)
 		}
-
-		events = append(events, ev)
 	}
 
 	return events, nil

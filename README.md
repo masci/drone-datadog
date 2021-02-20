@@ -35,6 +35,7 @@ Sending an event is similar, both `metrics` and `events` support the `host` fiel
         text: "Version ${DRONE_TAG} is available on Docker Hub"
         alert_type: "info"
         host: ${DRONE_SYSTEM_HOSTNAME}
+        priority: "low"
 ```
 
 You can use events to notify something bad happened:
@@ -49,6 +50,7 @@ You can use events to notify something bad happened:
       - title: "Build failure"
         text: "Build ${DRONE_BUILD_NUMBER} has failed"
         alert_type: "error"
+        priority: "normal"
   when:
     status:
       - failure
