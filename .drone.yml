@@ -5,7 +5,7 @@ steps:
   - name: test
     image: "golang:1.15-alpine"
     commands:
-      - 'echo " ! gofmt -d *.go 2>&1 | read " | bash'
+      - 'echo " ! gofmt -d *.go 2>&1 | read " | ash'
       - "go vet ./..."
       - "go build"
       - "go test -v -race"
