@@ -61,6 +61,7 @@ steps:
           text: "Version ${DRONE_TAG} is available on Docker Hub"
           alert_type: "info"
           host: ${DRONE_SYSTEM_HOSTNAME}
+          priority: "low"
 
 trigger:
   event:
