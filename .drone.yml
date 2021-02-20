@@ -10,7 +10,7 @@ steps:
       - 'echo " ! gofmt -d *.go 2>&1 | read " | ash'
       - "go vet ./..."
       - "go build"
-      - "go test -v -race"
+      - "go test -v"
 
   - name: datadog
     image: masci/drone-datadog
