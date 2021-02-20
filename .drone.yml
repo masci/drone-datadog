@@ -2,6 +2,7 @@ kind: pipeline
 name: test
 
 steps:
+  # Run the tests
   - name: test
     image: "golang:1.15-alpine"
     environment:
@@ -12,8 +13,23 @@ steps:
       - "go build"
       - "go test -v"
 
+  # Build the current commit
+  - name: build
+    image: plugins/docker
+    settings:
+      repo: masci/drone-datadog
+      build_args:
+        - "TAG=${DRONE_COMMIT_SHA}"
+        - "SHA1=${DRONE_COMMIT_SHA}"
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      tags:
+        - ${DRONE_COMMIT_SHA}
+
   - name: datadog
-    image: masci/drone-datadog
+    image: "masci/drone-datadog:${DRONE_COMMIT_SHA}"
     settings:
       api_key:
         from_secret: datadog_api_key
@@ -24,6 +40,12 @@ steps:
           value: 1.0
           tags: ["project:${DRONE_REPO_NAME}", "branch:${DRONE_BRANCH}"]
           host: ${DRONE_SYSTEM_HOSTNAME}
+      events:
+        - title: "Building drone-datadog for commit ${DRONE_COMMIT_SHA} success"
+          text: "Version '${DRONE_COMMIT_SHA}' is available on Docker Hub"
+          alert_type: "info"
+          host: ${DRONE_SYSTEM_HOSTNAME}
+          priority: "low"
 
 ---
 kind: pipeline
@@ -52,7 +74,7 @@ steps:
         - ${DRONE_TAG}
 
   - name: datadog
-    image: masci/drone-datadog
+    image: "masci/drone-datadog:${DRONE_TAG}"
     settings:
       api_key:
         from_secret: datadog_api_key
@@ -61,7 +83,6 @@ steps:
           text: "Version ${DRONE_TAG} is available on Docker Hub"
           alert_type: "info"
           host: ${DRONE_SYSTEM_HOSTNAME}
-          priority: "low"
 
 trigger:
   event:
