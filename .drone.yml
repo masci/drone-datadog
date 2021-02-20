@@ -4,6 +4,8 @@ name: test
 steps:
   - name: test
     image: "golang:1.15-alpine"
+    environment:
+      - CGO_ENABLED=0
     commands:
       - 'echo " ! gofmt -d *.go 2>&1 | read " | ash'
       - "go vet ./..."
